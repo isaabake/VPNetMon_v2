@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -28,6 +29,7 @@ namespace VPNetMon_v2
             DataContext = this;
             InitializeComponent();
             VPNConnected = false;
+            KillWatchedProcesses();
 
             Task.Factory.StartNew(() =>
             {
@@ -70,15 +72,37 @@ namespace VPNetMon_v2
             }
         }
 
+        private void KillWatchedProcesses()
+        {
+            foreach (string programname in VPNPrograms)
+            {
+                Process[] p = Process.GetProcessesByName(programname);
+                foreach (Process proc in p)
+                {
+                    proc.Kill();
+                }
+            }
+
+        }
+
+        private ObservableCollection<string> _VPNPrograms = new ObservableCollection<string>() {"mstsc"};
+
+        public ObservableCollection<string> VPNPrograms
+        {
+            get { return _VPNPrograms; }
+            set { _VPNPrograms = value; }
+        }
+
+
         private bool _VPNConnected;
         public bool VPNConnected
         {
             get { return _VPNConnected; }
             set { _VPNConnected = value; }
         }
-        
-        
-        private ObservableCollection<string> _refreshRates = new ObservableCollection<string>() {"1", "2", "5", "10", "30"};
+
+
+        private ObservableCollection<string> _refreshRates = new ObservableCollection<string>() { "1", "2", "5", "10", "30" };
         public ObservableCollection<string> RefreshRates
         {
             get { return _refreshRates; }
@@ -89,11 +113,11 @@ namespace VPNetMon_v2
         public string SelectedRefreshRate
         {
             get { return _selectedRefreshRate.ToString(); }
-            set 
-            { 
-                int.TryParse(value, out _selectedRefreshRate); 
+            set
+            {
+                int.TryParse(value, out _selectedRefreshRate);
             }
-        }        
+        }
 
         private string _VPNIPAddress;
         public string VPNIPAddress
