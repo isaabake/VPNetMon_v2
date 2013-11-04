@@ -26,10 +26,11 @@ namespace VPNetMon_v2
     /// </summary>
     public partial class MainWindow : Window
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public MainWindow()
         {
             DataContext = this;
-            InitializeComponent();
             VPNConnected = false;
 
             Task.Factory.StartNew(() =>
@@ -57,12 +58,14 @@ namespace VPNetMon_v2
                 }
             });
 
+            InitializeComponent();
+            VPNStatus = "Disconnected";
         }
 
         private List<string> GetAllIPAdresses()
         {
             List<string> IPAddresses = new List<string>();
-            
+
             foreach (NetworkInterface netif in NetworkInterface.GetAllNetworkInterfaces())
             {
                 if (netif.OperationalStatus == OperationalStatus.Up)
@@ -103,6 +106,14 @@ namespace VPNetMon_v2
             }
         }
 
+        protected void OnPropertyChanged(string name)
+        {   
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
+        }
+
         private ObservableCollection<string> _VPNPrograms = new ObservableCollection<string>();
         public ObservableCollection<string> VPNPrograms
         {
@@ -119,18 +130,30 @@ namespace VPNetMon_v2
             {
                 if (value == false && VPNConnected == true)
                 {
-                    //Kill
                     KillProcesses();
+                    this.Dispatcher.Invoke(() => VPNStatus = "Disconnected");
                 }
                 else if (value == true && VPNConnected == false)
                 {
-                    //Start
                     StartProcesses();
+                    this.Dispatcher.Invoke(() => VPNStatus = "Connected");
                 }
                 _VPNConnected = value;
+                this.OnPropertyChanged("VPNConnected");
             }
         }
 
+        private string _VPNStatus;
+        public string VPNStatus
+        {
+            get { return _VPNStatus; }
+            set 
+            {
+                _VPNStatus = value;
+                BindingOperations.GetBindingExpressionBase(this.StatusLabel, Label.ContentProperty).UpdateTarget();
+            }
+        }
+        
 
         private ObservableCollection<string> _refreshRates = new ObservableCollection<string>() { "1", "2", "5", "10", "30" };
         public ObservableCollection<string> RefreshRates
@@ -139,7 +162,7 @@ namespace VPNetMon_v2
             set { _refreshRates = value; }
         }
 
-        private int _selectedRefreshRate = 5;
+        private int _selectedRefreshRate = 2;
         public string SelectedRefreshRate
         {
             get { return _selectedRefreshRate.ToString(); }
@@ -160,11 +183,19 @@ namespace VPNetMon_v2
         public ObservableCollection<string> CurrentIPAddresses
         {
             get { return _currentIPAddresses; }
-            set 
+            set
             {
-                _currentIPAddresses = value; 
+                _currentIPAddresses = value;
             }
         }
+
+        private string _selectedProgram;
+        public string SelectedProgram
+        {
+            get { return _selectedProgram; }
+            set { _selectedProgram = value; }
+        }
+        
 
         private void AddProgram_Button_Click(object sender, RoutedEventArgs e)
         {
@@ -194,6 +225,19 @@ namespace VPNetMon_v2
                     binding.UpdateSource();
                 }
             }
+        }
+
+        private void RemoveProgram_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedProgram != null)
+            {
+                VPNPrograms.Remove(SelectedProgram);
+            }
+        }
+
+        private void OnClosing(object sender, CancelEventArgs e)
+        {
+            KillProcesses();
         }
 
 
