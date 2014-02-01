@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Microsoft.Win32;
+using System.Xml.Serialization;
 
 namespace VPNetMon_v2
 {
@@ -58,6 +59,7 @@ namespace VPNetMon_v2
                 }
             });
 
+            LoadPrograms();    
             InitializeComponent();
             VPNStatus = "Disconnected";
         }
@@ -208,6 +210,7 @@ namespace VPNetMon_v2
             if (userClickedOK == true)
             {
                 VPNPrograms.Add(openFileDialog.FileName);
+                SavePrograms();
             }
 
         }
@@ -232,12 +235,40 @@ namespace VPNetMon_v2
             if (SelectedProgram != null)
             {
                 VPNPrograms.Remove(SelectedProgram);
+                SavePrograms();
             }
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
             KillProcesses();
+        }
+
+        private void SavePrograms()
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<string>));
+            using (TextWriter writer = new StreamWriter("VPNetMonProgramsList.xml"))
+            {
+                serializer.Serialize(writer, VPNPrograms.ToList());
+                writer.Close();
+            }
+        }
+
+        private void LoadPrograms()
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<string>));
+            try
+            {
+                using (TextReader reader = new StreamReader("VPNetMonProgramsList.xml"))
+                {
+                    foreach (string prog in (List<string>)serializer.Deserialize(reader))
+                    {
+                        VPNPrograms.Add(prog);
+                    }
+                    reader.Close();
+                }
+            }
+            catch (Exception ex) { }
         }
 
 
