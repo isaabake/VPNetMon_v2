@@ -47,7 +47,7 @@ namespace VPNetMon_v2
                             CurrentIPAddresses.Add(s);
                         }
                     });
-                    if (CurrentIPAddresses.Contains(VPNIPAddress))
+                    if (CurrentIPAddresses.Any(ip => ip.StartsWith(VPNIPAddress)))
                     {
                         VPNConnected = true;
                     }
