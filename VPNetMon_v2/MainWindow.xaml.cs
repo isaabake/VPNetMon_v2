@@ -47,21 +47,26 @@ namespace VPNetMon_v2
                             CurrentIPAddresses.Add(s);
                         }
                     });
-                    if (CurrentIPAddresses.Any(ip => ip.StartsWith(VPNIPAddress)))
-                    {
-                        VPNConnected = true;
-                    }
-                    else
-                    {
-                        VPNConnected = false;
-                    }
+                    CheckVPNIPInAddresses();
                     Thread.Sleep(_selectedRefreshRate * 1000);
                 }
             });
 
-            LoadPrograms();    
+            LoadPrograms();
             InitializeComponent();
             VPNStatus = "Disconnected";
+        }
+
+        private void CheckVPNIPInAddresses()
+        {
+            if (VPNIPAddress.Contains('.') && CurrentIPAddresses.Any(ip => ip.StartsWith(VPNIPAddress)))
+            {
+                VPNConnected = true;
+            }
+            else
+            {
+                VPNConnected = false;
+            }
         }
 
         private List<string> GetAllIPAdresses()
@@ -109,7 +114,7 @@ namespace VPNetMon_v2
         }
 
         protected void OnPropertyChanged(string name)
-        {   
+        {
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(name));
@@ -149,13 +154,13 @@ namespace VPNetMon_v2
         public string VPNStatus
         {
             get { return _VPNStatus; }
-            set 
+            set
             {
                 _VPNStatus = value;
                 BindingOperations.GetBindingExpressionBase(this.StatusLabel, Label.ContentProperty).UpdateTarget();
             }
         }
-        
+
 
         private ObservableCollection<string> _refreshRates = new ObservableCollection<string>() { "1", "2", "5", "10", "30" };
         public ObservableCollection<string> RefreshRates
@@ -174,7 +179,7 @@ namespace VPNetMon_v2
             }
         }
 
-        private string _VPNIPAddress;
+        private string _VPNIPAddress = string.Empty;
         public string VPNIPAddress
         {
             get { return _VPNIPAddress; }
@@ -197,7 +202,7 @@ namespace VPNetMon_v2
             get { return _selectedProgram; }
             set { _selectedProgram = value; }
         }
-        
+
 
         private void AddProgram_Button_Click(object sender, RoutedEventArgs e)
         {
@@ -217,17 +222,15 @@ namespace VPNetMon_v2
 
         private void TextBox_KeyEnterUpdate(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
-            {
-                TextBox tBox = (TextBox)sender;
-                DependencyProperty prop = TextBox.TextProperty;
+            CheckVPNIPInAddresses();
+            //TextBox tBox = (TextBox)sender;
+            //DependencyProperty prop = TextBox.TextProperty;
 
-                BindingExpression binding = BindingOperations.GetBindingExpression(tBox, prop);
-                if (binding != null)
-                {
-                    binding.UpdateSource();
-                }
-            }
+            //BindingExpression binding = BindingOperations.GetBindingExpression(tBox, prop);
+            //if (binding != null)
+            //{
+            //    binding.UpdateSource();
+            //}
         }
 
         private void RemoveProgram_Button_Click(object sender, RoutedEventArgs e)

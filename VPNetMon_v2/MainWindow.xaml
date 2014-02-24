@@ -25,7 +25,7 @@
                     </Grid.ColumnDefinitions>
                     <DockPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
                         <Label Content="VPN IP:" />
-                        <TextBox Padding="0" Text="{Binding VPNIPAddress, Mode=TwoWay}" KeyDown="TextBox_KeyEnterUpdate" VerticalContentAlignment="Center"/>
+                        <TextBox Padding="0" Text="{Binding VPNIPAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyEnterUpdate" VerticalContentAlignment="Center" />
                     </DockPanel>
                     <Label Grid.Row="1" DockPanel.Dock="Left" Content="Current IP Addresses:" />
                     <Border Grid.Row="2" BorderBrush="Black" BorderThickness="1" Padding="2">
